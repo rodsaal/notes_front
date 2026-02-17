@@ -1,6 +1,164 @@
-# Vue 3 + Vite
+# README
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+# Sistema de Anotações
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
-# notes_front
+Aplicação fullstack composta por:
+
+- Backend: Ruby on Rails (API)
+- Frontend: Vue 3 (Vite)
+- Banco de dados: PostgreSQL
+- Testes: RSpec
+
+O sistema permite:
+
+- Criar anotações (título obrigatório)
+- Listar anotações
+- Exibir erros de validação
+- Persistência em banco de dados
+
+---
+
+## 📦 Estrutura do Projeto
+
+.
+
+├── notes_api/ # Backend Rails API
+
+└── notes_front/ # Frontend Vue 3 (Vite)
+
+
+---
+
+## 🚀 Como rodar a aplicação
+
+### 🔧 Pré-requisitos
+
+- Ruby 3.x
+- Rails 7+
+- Node 18+
+- PostgreSQL
+- Bundler
+
+---
+
+## 🖥️ Backend (Rails API)
+Clonar o repositório "notes_api"
+- HTTPS: https://github.com/rodsaal/notes_api.git
+- SSH: git@github.com:rodsaal/notes_api.git
+
+### 1️⃣ Instalar dependências
+
+```
+cd notes_api
+bundle install
+```
+### 2️⃣ Configurar banco de dados
+
+Certifique-se de que o PostgreSQL está rodando.
+
+```
+rails db:create
+rails db:migrate
+```
+
+### 3️⃣ Executar servidor
+```
+rails s
+```
+
+Backend disponível em:
+
+http://localhost:3000
+
+## 📡 Endpoints da API
+### 🔎 Listar anotações
+GET /api/v1/notes
+
+Exemplo:
+
+http://localhost:3000/api/v1/notes
+
+### ➕ Criar anotação
+POST /api/v1/notes
+Content-Type: application/json
+
+Exemplo de body:
+```
+{
+  "note": {
+    "title": "Reunião",
+    "content": "Definir próximos passos"
+  }
+}
+```
+
+Respostas possíveis:
+
+- 200 OK
+- 201 Created
+- 422 Unprocessable Entity (erro de validação)
+
+## 🎨 Frontend (Vue 3)
+
+### 1️⃣ Instalar dependências
+```
+cd notes_front
+npm install
+```
+
+### 2️⃣ Executar aplicação
+```
+npm run dev
+```
+
+
+Frontend disponível em:
+
+http://localhost:5173
+
+## 🧪 Testes Automatizados
+
+Os testes foram implementados utilizando RSpec.
+
+Cobertura implementada:
+
+Validação do model Note
+- Teste de listagem ordenada por data
+- Teste de criação válida
+- Teste de erro de validação (422)
+
+Para executar:
+```
+cd notes_api
+bundle exec rspec
+```
+
+## 🗄️ Banco de Dados
+
+Banco utilizado: PostgreSQL
+Ambiente padrão: development
+
+Para acessar o console:
+```
+rails console
+```
+
+Exemplo:
+```
+Note.count
+Note.last
+```
+
+
+## 🛠️ Decisões Técnicas
+
+- Rails em modo API
+- Frontend separado do backend
+- Validações centralizadas no model
+- Respostas seguindo padrão REST
+- Configuração de CORS via rack-cors
+- Testes de request para validar fluxo completo
+
+## 👨‍💻 Autor
+
+Rodrigo Almeida
