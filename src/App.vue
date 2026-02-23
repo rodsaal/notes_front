@@ -1,69 +1,66 @@
 <template>
-  <main style="max-width: 760px; margin: 40px auto; font-family: system-ui, sans-serif;">
+  <main class="page">
     <h1>Sistema de Anotações</h1>
 
-    <section style="margin-top: 24px; padding: 16px; border: 1px solid #ddd; border-radius: 8px;">
-      <h2 style="margin-top: 0;">Nova anotação</h2>
+    <section class="card">
+      <h2 class="card-title">Nova anotação</h2>
 
-      <div v-if="errors.length" style="margin: 10px 0; color: #b00020;">
+      <div v-if="errors.length" class="error-box">
         <strong>Corrija os erros:</strong>
-        <ul style="margin: 8px 0 0; padding-left: 18px;">
+        <ul class="error-list">
           <li v-for="(e, idx) in errors" :key="idx">{{ e }}</li>
         </ul>
       </div>
 
-      <form @submit.prevent="onSubmit" style="display: grid; gap: 10px;">
-        <label style="display: grid; gap: 6px;">
+      <div v-if="requestError" class="error-box">
+        <strong>Erro:</strong> {{ requestError }}
+      </div>
+
+      <form @submit.prevent="onSubmit" class="form">
+        <label class="field">
           <span>Título *</span>
           <input
               v-model.trim="form.title"
               placeholder="Digite o título"
-              style="padding: 10px; border: 1px solid #ccc; border-radius: 6px;"
+              class="input"
+              autocomplete="off"
           />
         </label>
 
-        <label style="display: grid; gap: 6px;">
+        <label class="field">
           <span>Conteúdo</span>
           <textarea
               v-model="form.content"
               placeholder="Digite o conteúdo..."
               rows="4"
-              style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; resize: vertical;"
-          ></textarea>
+              class="textarea"
+          />
         </label>
 
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <button
-              type="submit"
-              :disabled="loading"
-              style="padding: 10px 14px; border: 0; border-radius: 6px; cursor: pointer;"
-          >
+        <div class="actions">
+          <button type="submit" :disabled="loading" class="button">
             {{ loading ? "Salvando..." : "Salvar" }}
           </button>
 
-          <span v-if="successMessage" style="color: #0a7a2f;">{{ successMessage }}</span>
+          <span v-if="successMessage" class="success">{{ successMessage }}</span>
         </div>
       </form>
     </section>
 
-    <section style="margin-top: 24px;">
+    <section class="list">
       <h2>Anotações</h2>
 
       <p v-if="notesLoading">Carregando...</p>
       <p v-else-if="notes.length === 0">Nenhuma anotação ainda.</p>
 
-      <ul v-else style="list-style: none; padding: 0; display: grid; gap: 12px;">
-        <li
-            v-for="note in notes"
-            :key="note.id"
-            style="padding: 14px; border: 1px solid #eee; border-radius: 8px;"
-        >
-          <div style="display:flex; justify-content: space-between; gap: 12px;">
+      <ul v-else class="notes">
+        <li v-for="note in notes" :key="note.id" class="note">
+          <div class="note-header">
             <strong>{{ note.title }}</strong>
-            <small style="color:#666;">{{ formatDate(note.created_at) }}</small>
+            <small class="muted">{{ formatDate(note.created_at) }}</small>
           </div>
 
-          <p v-if="note.content" style="margin: 10px 0 0; white-space: pre-wrap;">
+          <p v-if="note.content" class="note-content">
             {{ note.content }}
           </p>
         </li>
@@ -76,37 +73,37 @@
 import { onMounted, reactive, ref } from "vue"
 import { createNote, listNotes } from "./services/notesApi"
 
-const form = reactive({
-  title: "",
-  content: "",
-})
+const form = reactive({ title: "", content: "" })
 
 const notes = ref([])
 const loading = ref(false)
 const notesLoading = ref(false)
 
 const errors = ref([])
+const requestError = ref("")
 const successMessage = ref("")
 
 function formatDate(iso) {
   if (!iso) return ""
-  const d = new Date(iso)
-  return d.toLocaleString()
+  return new Date(iso).toLocaleString()
 }
 
 function normalizeErrors(errObj) {
-  // { title: ["can't be blank"], other: ["..."] } -> ["title can't be blank", "other ..."]
   const out = []
   for (const [field, msgs] of Object.entries(errObj || {})) {
-    for (const msg of msgs) out.push(`${field} ${msg}`)
+    for (const msg of msgs || []) out.push(`${field} ${msg}`)
   }
   return out
 }
 
 async function fetchNotes() {
+  requestError.value = ""
   notesLoading.value = true
+
   try {
     notes.value = await listNotes()
+  } catch (e) {
+    requestError.value = e?.message || "Failed to load notes"
   } finally {
     notesLoading.value = false
   }
@@ -114,6 +111,7 @@ async function fetchNotes() {
 
 async function onSubmit() {
   successMessage.value = ""
+  requestError.value = ""
   errors.value = []
   loading.value = true
 
@@ -130,6 +128,8 @@ async function onSubmit() {
     successMessage.value = "Anotação salva!"
 
     await fetchNotes()
+  } catch (e) {
+    requestError.value = e?.message || "Failed to save note"
   } finally {
     loading.value = false
   }
@@ -137,3 +137,102 @@ async function onSubmit() {
 
 onMounted(fetchNotes)
 </script>
+
+<style scoped>
+.page {
+  max-width: 760px;
+  margin: 40px auto;
+  font-family: system-ui, sans-serif;
+}
+
+.card {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.card-title {
+  margin-top: 0;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.input,
+.textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.button {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.error-box {
+  margin: 10px 0;
+  color: #b00020;
+}
+
+.error-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.success {
+  color: #0a7a2f;
+}
+
+.list {
+  margin-top: 24px;
+}
+
+.notes {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.note {
+  padding: 14px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.note-content {
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+}
+
+.muted {
+  color: #666;
+}
+</style>
